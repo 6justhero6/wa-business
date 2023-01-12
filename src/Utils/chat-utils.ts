@@ -57,6 +57,24 @@ const to64BitNetworkOrder = (e: number) => {
 	return buff
 }
 
+const getLabelPatch = (
+	labeled: boolean,
+	label: string,
+	chat: string
+): WAPatchCreate => {
+	return {
+		syncAction: {
+			labelAssociationAction:{
+				labeled: labeled,
+			},
+		},
+		index: ['label_jid', label, chat],
+		type: 'regular',
+		apiVersion: 3,
+		operation: proto.SyncdMutation.SyncdOperation.SET,
+	}
+}
+
 type Mac = { indexMac: Uint8Array, valueMac: Uint8Array, operation: proto.SyncdMutation.SyncdOperation }
 
 const makeLtHashGenerator = ({ indexValueMap, hash }: Pick<LTHashState, 'hash' | 'indexValueMap'>) => {
@@ -606,6 +624,8 @@ export const chatModificationToAppPatch = (
 			apiVersion: 1,
 			operation: OP.SET,
 		}
+	} else if('setLabel' in mod) {
+		patch = getLabelPatch(mod.setLabel.labeled, mod.setLabel.label, jid)
 	} else {
 		throw new Boom('not supported')
 	}
@@ -731,6 +751,12 @@ export const processSyncAction = (
 		if(!isInitialSync) {
 			ev.emit('chats.delete', [id])
 		}
+	} else if(action?.labelAssociationAction) {
+		const label = syncAction.index[1]
+		const chat = syncAction.index[2]
+		const labeled = action.labelAssociationAction.labeled
+
+		ev.emit('label.set', { chat, label, labeled: !!labeled })
 	} else {
 		logger?.debug({ syncAction, id }, 'unprocessable update')
 	}

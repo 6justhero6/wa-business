@@ -700,6 +700,16 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		return appPatch(patch)
 	}
 
+	const getLabels = () => config.getLabels()
+
+	const setLabels = async(chats: string[], labels: string[], labeled: boolean) => {
+		for(const chat of chats) {
+			for(const label of labels) {
+				await chatModify({ setLabel: { label, labeled: labeled } }, chat)
+			}
+		}
+	}
+
 	/**
 	 * queries need to be fired on connection open
 	 * help ensure parity with WA Web
@@ -859,6 +869,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		updateBlockStatus,
 		getBusinessProfile,
 		resyncAppState,
-		chatModify
+		chatModify,
+		setLabels,
+		getLabels
 	}
 }

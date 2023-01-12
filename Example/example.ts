@@ -1,6 +1,17 @@
 import { Boom } from '@hapi/boom'
-import makeWASocket, { AnyMessageContent, delay, DisconnectReason, fetchLatestBaileysVersion, isJidBroadcast, makeCacheableSignalKeyStore, makeInMemoryStore, MessageRetryMap, useMultiFileAuthState } from '../src'
+import makeWASocket, {
+	AnyMessageContent,
+	delay,
+	DisconnectReason,
+	fetchLatestBaileysVersion,
+	isJidBroadcast,
+	makeCacheableSignalKeyStore,
+	makeInMemoryStore,
+	MessageRetryMap,
+	useMultiFileAuthState
+} from '../src'
 import MAIN_LOGGER from '../src/Utils/logger'
+import { Label } from '../src/Types/Label';
 
 const logger = MAIN_LOGGER.child({ })
 logger.level = 'trace'
@@ -53,7 +64,10 @@ const startSock = async() => {
 			return {
 				conversation: 'hello'
 			}
-		}
+		},
+		getLabels: (): Label[] => store &&
+			Object.keys(store.labels || {}).map((key) => store.labels[key]) ||
+			[]
 	})
 
 	store?.bind(sock.ev)

@@ -2,6 +2,7 @@ import type KeyedDB from '@adiwajshing/keyed-db'
 import type { Comparable } from '@adiwajshing/keyed-db/lib/Types'
 import type { Logger } from 'pino'
 import { proto } from '../../WAProto'
+import { Label } from '../Types/Label'
 import { DEFAULT_CONNECTION_CONFIG } from '../Defaults'
 import type makeMDSocket from '../Socket'
 import type { BaileysEventEmitter, Chat, ConnectionState, Contact, GroupMetadata, PresenceData, WAMessage, WAMessageCursor, WAMessageKey } from '../Types'
@@ -38,6 +39,7 @@ export default (
 	const groupMetadata: { [_: string]: GroupMetadata } = { }
 	const presences: { [id: string]: { [participant: string]: PresenceData } } = { }
 	const state: ConnectionState = { connection: 'close' }
+	const labels: { [_: string]: Label } = {}
 
 	const assertMessageList = (jid: string) => {
 		if(!messages[jid]) {
@@ -67,6 +69,15 @@ export default (
 	 * @param ev typically the event emitter from the socket connection
 	 */
 	const bind = (ev: BaileysEventEmitter) => {
+		ev.on('label.set', ({ chat, label, labeled }) => {
+			const id = `${chat}_${label}`
+			if(labeled) {
+				labels[id] = { id, chatId: chat, labelId: label }
+			} else {
+				delete labels[id]
+			}
+		})
+
 		ev.on('connection.update', update => {
 			Object.assign(state, update)
 		})
@@ -266,6 +277,7 @@ export default (
 		contacts,
 		messages,
 		groupMetadata,
+		labels,
 		state,
 		presences,
 		bind,

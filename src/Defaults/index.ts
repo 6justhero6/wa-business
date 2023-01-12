@@ -61,7 +61,8 @@ export const DEFAULT_CONNECTION_CONFIG: SocketConfig = {
 		patch: false,
 		snapshot: false,
 	},
-	getMessage: async() => undefined
+	getMessage: async() => undefined,
+	getLabels: () => []
 }
 
 export const MEDIA_PATH_MAP: { [T in MediaType]?: string } = {
